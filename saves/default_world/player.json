@@ -1,0 +1,146 @@
+{
+  "position": [
+    -107.771728515625,
+    66.0,
+    -420.484130859375
+  ],
+  "yaw": 32.63999999696077,
+  "pitch": -89.0,
+  "health": 20,
+  "hunger": 17,
+  "inventory": {
+    "selected_index": 0,
+    "slots": [
+      {
+        "item_id": 105,
+        "count": 1
+      },
+      {
+        "item_id": 2,
+        "count": 25
+      },
+      {
+        "item_id": 100,
+        "count": 11
+      },
+      {
+        "item_id": 11,
+        "count": 18
+      },
+      {
+        "item_id": 5,
+        "count": 6
+      },
+      {
+        "item_id": 16,
+        "count": 2
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      },
+      {
+        "item_id": 0,
+        "count": 0
+      }
+    ],
+    "hotbar": [
+      {
+        "block_id": 105,
+        "count": 1
+      },
+      {
+        "block_id": 2,
+        "count": 25
+      },
+      {
+        "block_id": 100,
+        "count": 11
+      },
+      {
+        "block_id": 11,
+        "count": 18
+      },
+      {
+        "block_id": 5,
+        "count": 6
+      },
+      {
+        "block_id": 16,
+        "count": 2
+      },
+      {
+        "block_id": 0,
+        "count": 0
+      },
+      {
+        "block_id": 0,
+        "count": 0
+      }
+    ]
+  }
+}

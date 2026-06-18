@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Reference - Voxel Sandbox</title>
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #101418;
+      --panel: #171d23;
+      --text: #e8edf2;
+      --muted: #aab6c2;
+      --line: #2b3440;
+      --accent: #62d0a2;
+      --code: #0b0f13;
+    }
+    [data-theme="light"] {
+      --bg: #f7f9fb;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #51606f;
+      --line: #d9e1e8;
+      --accent: #216e56;
+      --code: #eef3f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      padding: 1rem;
+    }
+    main { max-width: 1100px; padding: 2rem; }
+    nav a { display: block; padding: .35rem 0; color: var(--text); }
+    input, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .6rem .7rem;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button { cursor: pointer; margin-top: .5rem; }
+    .breadcrumbs, .muted { color: var(--muted); }
+    .api-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      margin: 1rem 0;
+      padding: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .65rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    pre {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--code);
+      padding: 1rem;
+    }
+    code { color: var(--accent); }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; }
+      main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <h2>Voxel Sandbox</h2>
+      <input id="search" type="search" placeholder="Search API" aria-label="Search API">
+      <button id="theme-toggle" type="button">Toggle light/dark</button>
+      <nav aria-label="Documentation">
+        <a href="index.html">Overview</a>
+        <a href="api_reference.html">API Reference</a>
+        <a href="architecture.md">Architecture Markdown</a>
+        <a href="world_system.md">World System</a>
+        <a href="chunk_system.md">Chunk System</a>
+        <a href="terrain_generation.md">Terrain Generation</a>
+        <a href="block_system.md">Block System</a>
+        <a href="rendering_system.md">Rendering</a>
+        <a href="player_system.md">Player</a>
+        <a href="inventory_system.md">Inventory</a>
+        <a href="save_system.md">Saving</a>
+        <a href="performance.md">Performance</a>
+        <a href="future_multiplayer.md">Future Multiplayer</a>
+        <a href="../../DEVELOPER_GUIDE.md">Developer Guide</a>
+        <a href="../../CHANGELOG.md">Changelog</a>
+      </nav>
+    </aside>
+    <main>
+      <div class="breadcrumbs">Docs / API Reference</div>
+      <h1>API Reference</h1>
+      <p class="muted">This page is updated as each Python file is generated.</p>
+
+      <section data-search-section>
+        <h2>Implemented Gameplay Systems</h2>
+        <div class="api-item">
+          <p><code>game/world/block_registry.py</code>: <code>BlockDefinition</code>, <code>BlockRegistry</code>.</p>
+          <p><code>game/chunks/chunk.py</code>: <code>ChunkCoord</code>, <code>Chunk</code>, <code>CHUNK_SIZE</code>, <code>CHUNK_HEIGHT</code>.</p>
+          <p><code>game/chunks/chunk_manager.py</code>: <code>ChunkManager</code>.</p>
+          <p><code>game/terrain/terrain_generator.py</code>: <code>TerrainGenerator</code>.</p>
+          <p><code>game/world/world_manager.py</code>: <code>WorldEvent</code>, <code>WorldManager</code>.</p>
+          <p><code>game/saving/save_manager.py</code>: <code>SaveManager</code>.</p>
+          <p><code>game/inventory/inventory_manager.py</code>: <code>ItemStack</code>, <code>InventoryManager</code>.</p>
+          <p><code>game/player/player_controller.py</code>: <code>PlayerController</code>.</p>
+          <p><code>game/rendering/chunk_mesher.py</code>: <code>ChunkMesher</code>.</p>
+          <p><code>game/rendering/render_manager.py</code>: <code>RenderManager</code>.</p>
+        </div>
+      </section>
+
+      <section id="file-main" data-search-section>
+        <h2>File: game/main.py</h2>
+        <div class="api-item">
+          <h3>Purpose</h3>
+          <p>
+            Provides the local client entry point. It applies Panda3D settings,
+            creates <code>GameManager</code>, and starts the engine loop.
+          </p>
+          <h3>Responsibilities</h3>
+          <ul>
+            <li>Define immutable startup settings with <code>AppConfig</code>.</li>
+            <li>Apply Panda3D PRC configuration before engine construction.</li>
+            <li>Instantiate the generated <code>GameManager</code>.</li>
+            <li>Return a process exit code after shutdown.</li>
+          </ul>
+          <h3>Dependencies</h3>
+          <p><code>argparse</code>, <code>dataclasses</code>, <code>pathlib</code>, <code>sys</code>, <code>panda3d.core.loadPrcFileData</code>, and <code>game_manager.GameManager</code>.</p>
+          <h3>Dependents</h3>
+          <p>Command-line execution and future launch scripts depend on this entry point.</p>
+          <h3>Future Multiplayer Impact</h3>
+          <p>
+            This file should remain client-only. A future dedicated server can
+            use a separate entry point that constructs shared world systems
+            without Panda3D window configuration.
+          </p>
+        </div>
+      </section>
+
+      <section id="file-game-manager" data-search-section>
+        <h2>File: game/game_manager.py</h2>
+        <div class="api-item">
+          <h3>Purpose</h3>
+          <p>
+            Owns the Panda3D local client shell and provides the root lifecycle
+            hooks that future systems will attach to.
+          </p>
+          <h3>Responsibilities</h3>
+          <ul>
+            <li>Create and own Panda3D <code>ShowBase</code>.</li>
+            <li>Register the central per-frame update task.</li>
+            <li>Store startup configuration and project paths.</li>
+            <li>Keep future systems coordinated without becoming world authority.</li>
+          </ul>
+          <h3>Dependencies</h3>
+          <p><code>pathlib.Path</code>, <code>typing.Any</code>, <code>direct.showbase.ShowBase.ShowBase</code>, and <code>panda3d.core.ClockObject</code>.</p>
+          <h3>Dependents</h3>
+          <p><code>game/main.py</code> constructs this class during local client startup.</p>
+          <h3>Future Multiplayer Impact</h3>
+          <p>
+            Remains client-only. It will eventually send player action requests
+            and consume world events, while authoritative world mutation belongs
+            to <code>WorldManager</code> and later a dedicated server.
+          </p>
+        </div>
+      </section>
+
+      <section data-search-section>
+        <h2>Package Boundary Files</h2>
+        <article class="api-item">
+          <h3>game/player/__init__.py</h3>
+          <p>Marks the player package. Future code owns first-person movement, mouse-look camera control, and collision queries. Player code must request world changes through <code>WorldManager</code>.</p>
+        </article>
+        <article class="api-item">
+          <h3>game/world/__init__.py</h3>
+          <p>Marks the world package. Future code owns central world authority, world events, block access rules, placement validation, and destruction validation.</p>
+        </article>
+        <article class="api-item">
+          <h3>game/chunks/__init__.py</h3>
+          <p>Marks the chunks package. Future code owns serializable chunk data, loading, unloading, and network-ready chunk payload shape.</p>
+        </article>
+        <article class="api-item">
+          <h3>game/terrain/__init__.py</h3>
+          <p>Marks the terrain package. Future code owns deterministic seed-based terrain and biome generation.</p>
+        </article>
+        <article class="api-item">
+          <h3>game/inventory/__init__.py</h3>
+          <p>Marks the inventory package. Future code owns inventory slots, hotbar selection, and item validation separately from world mutation.</p>
+        </article>
+        <article class="api-item">
+          <h3>game/rendering/__init__.py</h3>
+          <p>Marks the rendering package. Future code owns chunk meshes, scene nodes, lighting, and render-only consumption of world events.</p>
+        </article>
+        <article class="api-item">
+          <h3>game/saving/__init__.py</h3>
+          <p>Marks the saving package. Future code owns persistence of world metadata, dirty chunks, player state, inventory state, and settings.</p>
+        </article>
+      </section>
+
+      <section data-search-section>
+        <h2>Classes</h2>
+        <article class="api-item" id="class-appconfig">
+          <h3>AppConfig</h3>
+          <table>
+            <tr><th>File</th><td><code>game/main.py</code></td></tr>
+            <tr><th>Purpose</th><td>Stores startup settings used before Panda3D starts.</td></tr>
+            <tr><th>Lifecycle</th><td>Created once in <code>main()</code> and passed into <code>create_game()</code>.</td></tr>
+            <tr><th>Dependencies</th><td><code>dataclasses.dataclass</code>.</td></tr>
+            <tr><th>Properties</th><td><code>window_title</code>, <code>window_width</code>, <code>window_height</code>, <code>target_fps</code>, <code>show_frame_rate_meter</code>, <code>sync_video</code>, <code>cursor_hidden</code>.</td></tr>
+            <tr><th>Performance</th><td>Immutable and tiny; no meaningful runtime cost.</td></tr>
+            <tr><th>Serialization</th><td>Not currently serialized. May later be mirrored by user settings.</td></tr>
+            <tr><th>Multiplayer</th><td>Client-specific. Server config should live in a separate type.</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="class-game-manager">
+          <h3>GameManager</h3>
+          <table>
+            <tr><th>File</th><td><code>game/game_manager.py</code></td></tr>
+            <tr><th>Purpose</th><td>Top-level lifecycle manager for the local Panda3D client.</td></tr>
+            <tr><th>Lifecycle</th><td>Constructed once by <code>main.create_game()</code>; lives until the app exits or <code>close()</code> is called.</td></tr>
+            <tr><th>Dependencies</th><td><code>ShowBase</code>, <code>ClockObject</code>, project root, and AppConfig-compatible settings.</td></tr>
+            <tr><th>Properties</th><td><code>project_root</code>, <code>app_config</code>, <code>elapsed_time</code>, <code>is_shutting_down</code>.</td></tr>
+            <tr><th>Performance</th><td>Current update cost is O(1). Future systems must keep per-frame work budgeted.</td></tr>
+            <tr><th>Serialization</th><td>Does not serialize game state. Future SaveManager owns persistence.</td></tr>
+            <tr><th>Multiplayer</th><td>Client coordinator only; not canonical world authority.</td></tr>
+          </table>
+        </article>
+      </section>
+
+      <section data-search-section>
+        <h2>Methods</h2>
+        <article class="api-item" id="method-apply-engine-config">
+          <h3>apply_engine_config(config)</h3>
+          <table>
+            <tr><th>Purpose</th><td>Applies Panda3D PRC settings before <code>ShowBase</code> exists.</td></tr>
+            <tr><th>Parameters</th><td><code>config: AppConfig</code> startup settings.</td></tr>
+            <tr><th>Returns</th><td><code>None</code>.</td></tr>
+            <tr><th>Side Effects</th><td>Mutates Panda3D's process-level configuration registry.</td></tr>
+            <tr><th>Exceptions</th><td>No expected runtime exceptions.</td></tr>
+            <tr><th>Complexity</th><td>O(1).</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="method-create-game">
+          <h3>create_game(config)</h3>
+          <table>
+            <tr><th>Purpose</th><td>Applies config, imports <code>GameManager</code>, and constructs the game.</td></tr>
+            <tr><th>Parameters</th><td><code>config: AppConfig</code>.</td></tr>
+            <tr><th>Returns</th><td>A <code>GameManager</code> instance.</td></tr>
+            <tr><th>Side Effects</th><td>Imports client systems and constructs the manager hierarchy.</td></tr>
+            <tr><th>Exceptions</th><td><code>RuntimeError</code> if <code>game/core/game_manager.py</code> has not been generated.</td></tr>
+            <tr><th>Complexity</th><td>O(1) at this level; subsystem costs belong to <code>GameManager</code>.</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="method-main">
+          <h3>main()</h3>
+          <table>
+            <tr><th>Purpose</th><td>Runs the local Panda3D client.</td></tr>
+            <tr><th>Parameters</th><td>None.</td></tr>
+            <tr><th>Returns</th><td>Integer process exit code.</td></tr>
+            <tr><th>Side Effects</th><td>Starts the Panda3D app loop and opens a game window.</td></tr>
+            <tr><th>Exceptions</th><td>Propagates startup errors from generated systems.</td></tr>
+            <tr><th>Complexity</th><td>O(1) outside the engine loop.</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="method-parse-args">
+          <h3>parse_args(argv)</h3>
+          <table>
+            <tr><th>Purpose</th><td>Parses local development command-line flags.</td></tr>
+            <tr><th>Parameters</th><td><code>argv: list[str] | None</code>.</td></tr>
+            <tr><th>Returns</th><td><code>argparse.Namespace</code>.</td></tr>
+            <tr><th>Side Effects</th><td>Reads process arguments when <code>argv</code> is None.</td></tr>
+            <tr><th>Exceptions</th><td><code>SystemExit</code> for invalid CLI usage.</td></tr>
+            <tr><th>Complexity</th><td>O(n), where n is argument count.</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="method-game-manager-init">
+          <h3>GameManager.__init__(project_root, app_config)</h3>
+          <table>
+            <tr><th>Purpose</th><td>Initializes the Panda3D client shell.</td></tr>
+            <tr><th>Parameters</th><td><code>project_root: Path</code>, <code>app_config: Any</code>.</td></tr>
+            <tr><th>Returns</th><td><code>None</code>.</td></tr>
+            <tr><th>Side Effects</th><td>Creates Panda3D app state, sets background color, disables default mouse control, and registers the update task.</td></tr>
+            <tr><th>Exceptions</th><td>Panda3D may raise engine-specific graphics initialization errors.</td></tr>
+            <tr><th>Complexity</th><td>O(1) in the current stage.</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="method-game-manager-update">
+          <h3>GameManager.update(task)</h3>
+          <table>
+            <tr><th>Purpose</th><td>Central per-frame hook for the client shell.</td></tr>
+            <tr><th>Parameters</th><td><code>task</code>, supplied by Panda3D's task manager.</td></tr>
+            <tr><th>Returns</th><td><code>task.cont</code> while active or <code>task.done</code> during shutdown.</td></tr>
+            <tr><th>Side Effects</th><td>Accumulates elapsed time.</td></tr>
+            <tr><th>Exceptions</th><td>No expected exceptions.</td></tr>
+            <tr><th>Complexity</th><td>O(1) in the current stage.</td></tr>
+          </table>
+        </article>
+
+        <article class="api-item" id="method-game-manager-close">
+          <h3>GameManager.close()</h3>
+          <table>
+            <tr><th>Purpose</th><td>Controlled project-level teardown hook for smoke tests and future exits.</td></tr>
+            <tr><th>Parameters</th><td>None.</td></tr>
+            <tr><th>Returns</th><td><code>None</code>.</td></tr>
+            <tr><th>Side Effects</th><td>Marks the manager as closing, removes the update task, and destroys Panda3D resources.</td></tr>
+            <tr><th>Exceptions</th><td>No expected exceptions.</td></tr>
+            <tr><th>Complexity</th><td>O(1) in the current stage.</td></tr>
+          </table>
+        </article>
+      </section>
+
+      <section data-search-section>
+        <h2>Usage Example</h2>
+        <pre><code class="language-python">from main import AppConfig, create_game
+
+game = create_game(AppConfig(window_width=1920, window_height=1080))
+game.run()
+
+# Non-interactive smoke test:
+# py game\main.py --smoke-test</code></pre>
+      </section>
+    </main>
+  </div>
+  <script>
+    const root = document.documentElement;
+    const savedTheme = localStorage.getItem("docs-theme");
+    if (savedTheme) root.dataset.theme = savedTheme;
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+      localStorage.setItem("docs-theme", root.dataset.theme);
+    });
+    document.getElementById("search").addEventListener("input", (event) => {
+      const query = event.target.value.trim().toLowerCase();
+      document.querySelectorAll("[data-search-section]").forEach((section) => {
+        section.hidden = query.length > 0 && !section.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>
