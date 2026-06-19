@@ -72,8 +72,8 @@ class AppConfig:
     """
 
     window_title: str = "Voxel Sandbox"
-    window_width: int = 1280
-    window_height: int = 720
+    window_width: int = 1920
+    window_height: int = 1080
     target_fps: int = 60
     show_frame_rate_meter: bool = True
     sync_video: bool = False

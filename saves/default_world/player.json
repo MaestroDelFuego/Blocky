@@ -1,15 +1,15 @@
 {
   "position": [
-    -107.771728515625,
+    293.50439453125,
     66.0,
-    -420.484130859375
+    193.92372131347656
   ],
-  "yaw": 32.63999999696077,
-  "pitch": -89.0,
+  "yaw": 195.83999999663314,
+  "pitch": 89.0,
   "health": 20,
-  "hunger": 17,
+  "hunger": 16,
   "inventory": {
-    "selected_index": 0,
+    "selected_index": 7,
     "slots": [
       {
         "item_id": 105,
@@ -17,7 +17,15 @@
       },
       {
         "item_id": 2,
-        "count": 25
+        "count": 51
+      },
+      {
+        "item_id": 100,
+        "count": 64
+      },
+      {
+        "item_id": 5,
+        "count": 12
       },
       {
         "item_id": 100,
@@ -25,23 +33,15 @@
       },
       {
         "item_id": 11,
-        "count": 18
+        "count": 17
       },
       {
-        "item_id": 5,
-        "count": 6
+        "item_id": 8,
+        "count": 12
       },
       {
-        "item_id": 16,
+        "item_id": 104,
         "count": 2
-      },
-      {
-        "item_id": 0,
-        "count": 0
-      },
-      {
-        "item_id": 0,
-        "count": 0
       },
       {
         "item_id": 0,
@@ -115,7 +115,15 @@
       },
       {
         "block_id": 2,
-        "count": 25
+        "count": 51
+      },
+      {
+        "block_id": 100,
+        "count": 64
+      },
+      {
+        "block_id": 5,
+        "count": 12
       },
       {
         "block_id": 100,
@@ -123,23 +131,15 @@
       },
       {
         "block_id": 11,
-        "count": 18
+        "count": 17
       },
       {
-        "block_id": 5,
-        "count": 6
+        "block_id": 8,
+        "count": 12
       },
       {
-        "block_id": 16,
+        "block_id": 104,
         "count": 2
-      },
-      {
-        "block_id": 0,
-        "count": 0
-      },
-      {
-        "block_id": 0,
-        "count": 0
       }
     ]
   }

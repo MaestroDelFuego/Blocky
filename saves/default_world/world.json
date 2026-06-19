@@ -1,9 +1,9 @@
 {
   "seed": 1337,
-  "time_of_day": 0.6602003999999898,
+  "time_of_day": 0.5352311909999994,
   "terrain_version": 3,
   "settings": {
-    "render_distance": 2,
+    "render_distance": 5,
     "fov": 110.0,
     "camera_relative_movement": true
   }

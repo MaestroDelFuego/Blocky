@@ -229,11 +229,19 @@ class TerrainGenerator:
                 block_id = BlockRegistry.STONE
             elif y < height - 5:
                 block_id = BlockRegistry.STONE
-                ore_roll = self._hash_noise(world_x * 17 + y * 3, world_z * 17 - y * 5)
-                if 8 < y < 54 and ore_roll > 0.965:
-                    block_id = BlockRegistry.COAL_ORE
-                elif 6 < y < 42 and ore_roll < -0.975:
-                    block_id = BlockRegistry.IRON_ORE
+
+                # ONLY compute ore noise in valid height range
+                if 6 < y < 54:
+                    ore_roll = self._hash_noise(
+                        world_x * 17 + y * 3,
+                        world_z * 17 - y * 5
+                    )
+
+                    if ore_roll > 0.965:
+                        block_id = BlockRegistry.COAL_ORE
+
+                    elif ore_roll < -0.975:
+                        block_id = BlockRegistry.IRON_ORE
             elif y < height:
                 block_id = subsurface
             else:

@@ -107,12 +107,12 @@ class PlayerController:
         self.keys: dict[str, bool] = {}
         self.mouse_sensitivity = 0.12
         self.move_speed = 7.0
-        self.jump_speed = 7.5
+        self.jump_speed = 9
         self.gravity = 22.0
         self.camera_relative_movement = True
         self.player_radius = 0.32
-        self.player_height = 1.8
-        self.eye_height = 1.62
+        self.player_height = 2.0
+        self.eye_height = 1.82
         self.health = 20
         self.hunger = 20
         self.hunger_timer = 0.0
