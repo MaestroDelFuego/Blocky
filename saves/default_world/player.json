@@ -1,71 +1,71 @@
 {
   "position": [
-    293.50439453125,
-    66.0,
-    193.92372131347656
+    1242.9405517578125,
+    63.75318145751953,
+    853.6001586914062
   ],
-  "yaw": 195.83999999663314,
-  "pitch": 89.0,
+  "yaw": 14.039999998934135,
+  "pitch": -0.9200000000000154,
   "health": 20,
-  "hunger": 16,
+  "hunger": 14,
   "inventory": {
-    "selected_index": 7,
+    "selected_index": 0,
     "slots": [
       {
         "item_id": 105,
         "count": 1
       },
       {
-        "item_id": 2,
-        "count": 51
+        "item_id": 8,
+        "count": 48
       },
       {
         "item_id": 100,
-        "count": 64
+        "count": 59
       },
       {
         "item_id": 5,
-        "count": 12
+        "count": 33
       },
       {
         "item_id": 100,
-        "count": 11
+        "count": 8
       },
       {
         "item_id": 11,
-        "count": 17
+        "count": 60
       },
       {
-        "item_id": 8,
-        "count": 12
+        "item_id": 2,
+        "count": 54
       },
       {
         "item_id": 104,
         "count": 2
       },
       {
-        "item_id": 0,
-        "count": 0
+        "item_id": 11,
+        "count": 32
       },
       {
-        "item_id": 0,
-        "count": 0
+        "item_id": 2,
+        "count": 64
       },
       {
-        "item_id": 0,
-        "count": 0
+        "item_id": 14,
+        "count": 53
       },
       {
-        "item_id": 0,
-        "count": 0
+        "item_id": 2,
+        "count": 24
       },
       {
-        "item_id": 0,
-        "count": 0
+        "item_id": 4,
+        "count": 5
       },
       {
-        "item_id": 0,
-        "count": 0
+        "item_id": 15,
+        "count": 1
       },
       {
         "item_id": 0,
@@ -114,28 +114,28 @@
         "count": 1
       },
       {
-        "block_id": 2,
-        "count": 51
+        "block_id": 8,
+        "count": 48
       },
       {
         "block_id": 100,
-        "count": 64
+        "count": 59
       },
       {
         "block_id": 5,
-        "count": 12
+        "count": 33
       },
       {
         "block_id": 100,
-        "count": 11
+        "count": 8
       },
       {
         "block_id": 11,
-        "count": 17
+        "count": 60
       },
       {
-        "block_id": 8,
-        "count": 12
+        "block_id": 2,
+        "count": 54
       },
       {
         "block_id": 104,
