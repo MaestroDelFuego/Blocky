@@ -71,6 +71,7 @@ class PlayerController:
         world_manager: WorldManager,
         inventory_manager: InventoryManager,
         start_position: tuple[float, float, float] = (0.0, 85.0, 0.0),
+        network_client: Any = None,
     ) -> None:
         """Create the player controller.
 
@@ -99,6 +100,7 @@ class PlayerController:
         self.base = base
         self.world = world_manager
         self.inventory = inventory_manager
+        self.network_client = network_client
         self.position = Vec3(*start_position)
         self.velocity = Vec3(0, 0, 0)
         self.yaw = 0.0
@@ -152,8 +154,8 @@ class PlayerController:
             self.base.accept(f"{key}-up", self._set_key, [key, False])
         for index in range(8):
             self.base.accept(str(index + 1), self.inventory.select, [index])
-        self.base.accept("wheel_up", self.inventory.scroll, [-1])
-        self.base.accept("wheel_down", self.inventory.scroll, [1])
+        self.base.accept("wheel_up", self._handle_mouse_wheel, [-1])
+        self.base.accept("wheel_down", self._handle_mouse_wheel, [1])
         self.base.accept("mouse1", self.destroy_target_block)
         self.base.accept("mouse3", self.place_target_block)
 
@@ -182,6 +184,26 @@ class PlayerController:
 
         self.keys[key] = pressed
 
+    def _menu_open(self) -> bool:
+        """Return whether any blocking overlay is currently visible."""
+
+        render_manager = getattr(self.base, "render_manager", None)
+        return bool(
+            getattr(self.base, "settings_menu_open", False)
+            or getattr(render_manager, "inventory_visible", False)
+            or getattr(render_manager, "crafting_menu_visible", False)
+        )
+
+    def _handle_mouse_wheel(self, delta: int) -> None:
+        """Scroll crafting layers when the crafting menu is open."""
+
+        render_manager = getattr(self.base, "render_manager", None)
+        if getattr(render_manager, "crafting_menu_visible", False):
+            render_manager.shift_crafting_page(delta)
+            return
+        if getattr(render_manager, "inventory_visible", False):
+            self.inventory.scroll(delta)
+
     def update(self, dt: float) -> None:
         """Advance movement and camera for one frame.
 
@@ -206,6 +228,10 @@ class PlayerController:
         """
 
         dt = min(dt, 0.1)
+        if self._menu_open():
+            self.velocity = Vec3(0, 0, 0)
+            self._apply_camera()
+            return
         if self.position.y < -8.0:
             self.take_damage(20)
         self._update_mouse_look()
@@ -333,6 +359,7 @@ class PlayerController:
 
         Purpose:
             Resolves simple AABB collision one axis at a time.
+            Prevents movement into unloaded chunks (void boundaries).
 
         Args:
             axis: Axis name, x, y, or z.
@@ -355,7 +382,9 @@ class PlayerController:
             return
         original = Vec3(self.position)
         setattr(self.position, axis, getattr(self.position, axis) + amount)
-        if self._collides():
+        
+        # Check for collision with blocks OR void boundaries
+        if self._collides() or self._in_void():
             self.position = original
             if axis == "y":
                 if amount < 0:
@@ -368,6 +397,25 @@ class PlayerController:
                 setattr(self.velocity, axis, 0)
         elif axis == "y" and amount < 0:
             self.on_ground = False
+
+    def _in_void(self) -> bool:
+        """Check if player is in unloaded chunk area (void).
+        
+        Purpose:
+            Prevent walking into unloaded chunks by checking if the player's
+            position falls in a chunk that isn't loaded.
+        
+        Returns:
+            True if player is outside loaded chunk boundary.
+        """
+        from chunks.chunk import ChunkCoord, CHUNK_SIZE
+        
+        chunk_x = int(self.position.x) // CHUNK_SIZE
+        chunk_z = int(self.position.z) // CHUNK_SIZE
+        coord = ChunkCoord(chunk_x, chunk_z)
+        
+        # If chunk not loaded, player would be in void - block movement
+        return coord not in self.world.chunk_manager.loaded
 
     def _collides(self) -> bool:
         """Return whether the player's body intersects solid blocks.
@@ -411,13 +459,6 @@ class PlayerController:
 
         Args:
             None.
-
-        Returns:
-            Normalized direction tuple.
-
-        Side Effects:
-            None.
-
         Raises:
             No expected exceptions.
 
@@ -450,7 +491,7 @@ class PlayerController:
             O(r), where r is raycast sample count.
         """
 
-        if getattr(self.base, "settings_menu_open", False) or getattr(self.base.render_manager, "inventory_visible", False):
+        if self._menu_open():
             return
         hit = self.world.raycast(self.eye_position(), self._view_direction())
         if not hit:
@@ -478,6 +519,9 @@ class PlayerController:
         block_id = self.mining_block_id
         if self.world.destroy_block(self.mining_target):
             self.inventory.add_item(self._drop_for_block(block_id), self._drop_count_for_block(block_id))
+            # Send block change to server
+            if self.network_client:
+                self.network_client.send_block_change(self.mining_target, block_id, BlockRegistry.AIR)
         self._clear_mining()
 
     def _clear_mining(self) -> None:
@@ -543,7 +587,7 @@ class PlayerController:
             O(r), where r is raycast sample count.
         """
 
-        if getattr(self.base, "settings_menu_open", False) or getattr(self.base.render_manager, "inventory_visible", False):
+        if self._menu_open():
             return
         selected_item = self.inventory.selected_item_id()
         food_value = self.inventory.food_value(selected_item)
@@ -555,7 +599,12 @@ class PlayerController:
         if hit:
             target_block = self.world.get_block(*hit[0])
             if target_block in (BlockRegistry.DOOR_CLOSED, BlockRegistry.DOOR_OPEN):
-                self.world.set_block(*hit[0], BlockRegistry.DOOR_OPEN if target_block == BlockRegistry.DOOR_CLOSED else BlockRegistry.DOOR_CLOSED)
+                old_block = target_block
+                new_block = BlockRegistry.DOOR_OPEN if target_block == BlockRegistry.DOOR_CLOSED else BlockRegistry.DOOR_CLOSED
+                self.world.set_block(*hit[0], new_block)
+                # Send block change to server
+                if self.network_client:
+                    self.network_client.send_block_change(hit[0], old_block, new_block)
                 return
         block_id = self.inventory.selected_block_id()
         if block_id == 0:
@@ -563,8 +612,12 @@ class PlayerController:
         if hit:
             place_position = hit[1]
             if not self._block_overlaps_player(place_position):
+                old_block = self.world.get_block(*place_position)
                 if self.world.place_block(place_position, block_id):
                     self.inventory.consume_selected()
+                    # Send block change to server
+                    if self.network_client:
+                        self.network_client.send_block_change(place_position, old_block, block_id)
 
     def _drop_for_block(self, block_id: int) -> int:
         """Return the item dropped when a block is broken."""
@@ -731,6 +784,17 @@ class PlayerController:
             self.move_to_safe_spawn()
         elif surface is not None and self.position.y >= 88.0 and self.position.y - surface > 8.0:
             self.move_to_safe_spawn()
+    
+    def get_rotation(self) -> tuple[float, float]:
+        """Get current camera rotation in radians.
+        
+        Returns:
+            Tuple of (pitch, yaw) in radians.
+        """
+        import math
+        pitch_rad = math.radians(self.pitch)
+        yaw_rad = math.radians(self.yaw)
+        return (pitch_rad, yaw_rad)
 
     def to_dict(self) -> dict[str, object]:
         """Serialize player state.

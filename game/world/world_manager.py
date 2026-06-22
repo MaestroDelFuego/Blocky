@@ -121,7 +121,7 @@ class WorldManager:
         self.blocks = block_registry
         self.events: list[WorldEvent] = []
 
-    def update_streaming(self, position: tuple[float, float, float]) -> None:
+    def update_streaming(self, position: tuple[float, float, float]) -> list[ChunkCoord]:
         """Update chunk loading around a position.
 
         Purpose:
@@ -143,7 +143,16 @@ class WorldManager:
             O(r^2 + n), where r is load radius and n is loaded chunk count.
         """
 
-        self.chunk_manager.update_around(position[0], position[2])
+        loaded_chunks = self.chunk_manager.update_around(position[0], position[2])
+        return [chunk.coord for chunk in loaded_chunks]
+
+    def poll_streaming(self) -> list[tuple[int, int]]:
+        """Promote ready chunk jobs without changing the active streaming window."""
+
+        return [
+            (chunk.coord.x, chunk.coord.z)
+            for chunk in self.chunk_manager.poll_ready_chunks()
+        ]
 
     def get_block(self, x: int, y: int, z: int) -> int:
         """Return the block ID at a world coordinate.

@@ -74,7 +74,7 @@ class AppConfig:
     window_title: str = "Voxel Sandbox"
     window_width: int = 1920
     window_height: int = 1080
-    target_fps: int = 60
+    target_fps: int = 0
     show_frame_rate_meter: bool = True
     sync_video: bool = False
     cursor_hidden: bool = True
@@ -111,19 +111,22 @@ def apply_engine_config(config: AppConfig) -> None:
     loadPrcFileData(
         "",
         "\n".join(
-            (
-                f"window-title {config.window_title}",
-                f"win-size {config.window_width} {config.window_height}",
-                f"window-type {config.window_type}",
-                f"show-frame-rate-meter {show_fps}",
-                f"sync-video {sync_video}",
-                f"cursor-hidden {cursor_hidden}",
-                "textures-power-2 none",
-                "texture-minfilter nearest",
-                "texture-magfilter nearest",
-                "gl-coordinate-system default",
-                f"clock-frame-rate {config.target_fps}",
+            tuple(
+                line
+                for line in (
+                    f"window-title {config.window_title}",
+                    f"win-size {config.window_width} {config.window_height}",
+                    f"window-type {config.window_type}",
+                    f"show-frame-rate-meter {show_fps}",
+                    f"sync-video {sync_video}",
+                    f"cursor-hidden {cursor_hidden}",
+                    "textures-power-2 none",
+                    "texture-minfilter nearest",
+                    "texture-magfilter nearest",
+                    "gl-coordinate-system default",
+                )
             )
+            + ((f"clock-frame-rate {config.target_fps}",) if config.target_fps > 0 else ())
         ),
     )
 
@@ -187,6 +190,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Create and tear down the game shell without entering the main loop.",
     )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Start with the performance debug overlay enabled.",
+    )
     return parser.parse_args(argv)
 
 
@@ -215,6 +224,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     window_type = "offscreen" if args.smoke_test else "onscreen"
     game = create_game(AppConfig(window_type=window_type))
+
+    if args.debug:
+        game.debug_on()
 
     if args.smoke_test:
         game.close()

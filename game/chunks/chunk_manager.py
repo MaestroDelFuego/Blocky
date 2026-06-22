@@ -26,9 +26,33 @@ Future multiplayer considerations:
 
 from __future__ import annotations
 
+import os
+from concurrent.futures import Future, ProcessPoolExecutor
+from pathlib import Path
+
 from chunks.chunk import CHUNK_SIZE, Chunk, ChunkCoord
+from world.block_registry import BlockRegistry
 from saving.save_manager import SaveManager
 from terrain.terrain_generator import TerrainGenerator
+
+
+def _generate_chunk_job(
+    save_root: str,
+    world_name: str,
+    terrain_version: int,
+    seed: int,
+    coord: tuple[int, int],
+) -> Chunk:
+    """Load or generate a chunk in a worker process."""
+
+    save_manager = SaveManager(Path(save_root), world_name)
+    save_manager.terrain_version = terrain_version
+    chunk_coord = ChunkCoord(*coord)
+    saved = save_manager.load_chunk(chunk_coord)
+    if saved is not None:
+        return saved
+    generator = TerrainGenerator(seed, BlockRegistry())
+    return generator.generate_chunk(chunk_coord)
 
 
 class ChunkManager:
@@ -87,8 +111,14 @@ class ChunkManager:
         self.load_radius = load_radius
         self.loaded: dict[ChunkCoord, Chunk] = {}
         self.pending_loads: list[ChunkCoord] = []
-        self.max_loads_per_update = 1
-        self.max_unloads_per_update = 2
+        self.pending_futures: dict[ChunkCoord, Future[Chunk | None]] = {}
+        self._active_required: set[ChunkCoord] = set()
+        # Pre-load chunks to match load_radius so player can't enter void
+        self.core_load_radius = load_radius
+        worker_count = max(2, min(8, (os.cpu_count() or 4) - 1))
+        self.executor = ProcessPoolExecutor(max_workers=worker_count)
+        self.max_loads_per_update = 4
+        self.max_unloads_per_update = 4
 
     def update_around(self, world_x: float, world_z: float) -> list[Chunk]:
         """Load and unload chunks around a world position.
@@ -119,22 +149,43 @@ class ChunkManager:
             for dx in range(-self.load_radius, self.load_radius + 1)
             for dz in range(-self.load_radius, self.load_radius + 1)
         }
+        self._active_required = required
+
+        core_radius = min(self.core_load_radius, self.load_radius)
+        core_required = {
+            ChunkCoord(center.x + dx, center.z + dz)
+            for dx in range(-core_radius, core_radius + 1)
+            for dz in range(-core_radius, core_radius + 1)
+        }
 
         loaded_now = []
+        # NO SYNCHRONOUS LOADING - queue all chunks async to prevent stuttering
+        self._collect_ready_chunks(required, loaded_now)
         pending = {coord for coord in self.pending_loads if coord in required and coord not in self.loaded}
-        missing = required - set(self.loaded) - pending
+        missing = required - set(self.loaded) - pending - set(self.pending_futures.keys())
+        
+        # Prioritize core chunks at front of queue
+        def sort_key(coord):
+            dist = abs(coord.x - center.x) + abs(coord.z - center.z)
+            is_core = 1 if coord in core_required else 0
+            return (-is_core, dist)  # Core chunks first, then by distance
+        
         self.pending_loads = [coord for coord in self.pending_loads if coord in pending]
-        self.pending_loads.extend(
-            sorted(
-                missing,
-                key=lambda coord: (abs(coord.x - center.x) + abs(coord.z - center.z), coord.x, coord.z),
-            )
-        )
+        self.pending_loads.extend(sorted(missing, key=sort_key))
 
         for _ in range(min(self.max_loads_per_update, len(self.pending_loads))):
             coord = self.pending_loads.pop(0)
-            if coord not in self.loaded and coord in required:
-                loaded_now.append(self.load_chunk(coord))
+            if coord not in self.loaded and coord in required and coord not in self.pending_futures:
+                self.pending_futures[coord] = self.executor.submit(
+                    _generate_chunk_job,
+                    str(self.save_manager.save_root),
+                    self.save_manager.world_name,
+                    self.save_manager.terrain_version,
+                    self.terrain_generator.seed,
+                    (coord.x, coord.z),
+                )
+
+        self._collect_ready_chunks(required, loaded_now)
 
         unloaded = 0
         for coord in sorted(
@@ -149,6 +200,47 @@ class ChunkManager:
                 unloaded += 1
 
         return loaded_now
+
+    def poll_ready_chunks(self) -> list[Chunk]:
+        """Promote any finished chunk jobs and continue queuing pending chunks."""
+
+        loaded_now: list[Chunk] = []
+        if not self._active_required:
+            return loaded_now
+        
+        # Collect any finished chunks
+        self._collect_ready_chunks(self._active_required, loaded_now)
+        
+        # Continue queuing new chunks from pending_loads
+        for _ in range(min(self.max_loads_per_update, len(self.pending_loads))):
+            coord = self.pending_loads.pop(0)
+            if coord not in self.loaded and coord in self._active_required and coord not in self.pending_futures:
+                self.pending_futures[coord] = self.executor.submit(
+                    _generate_chunk_job,
+                    str(self.save_manager.save_root),
+                    self.save_manager.world_name,
+                    self.save_manager.terrain_version,
+                    self.terrain_generator.seed,
+                    (coord.x, coord.z),
+                )
+        
+        return loaded_now
+
+    def _collect_ready_chunks(self, required: set[ChunkCoord], loaded_now: list[Chunk]) -> None:
+        """Move completed chunk loads into the loaded map."""
+
+        for coord, future in list(self.pending_futures.items()):
+            if not future.done():
+                continue
+            self.pending_futures.pop(coord, None)
+            try:
+                chunk = future.result()
+            except Exception:
+                continue
+            if chunk is None or coord not in required or coord in self.loaded:
+                continue
+            self.loaded[coord] = chunk
+            loaded_now.append(chunk)
 
     def load_chunk(self, coord: ChunkCoord) -> Chunk:
         """Load or generate one chunk.
@@ -173,9 +265,7 @@ class ChunkManager:
         """
 
         saved = self.save_manager.load_chunk(coord)
-        chunk = saved if saved is not None else self.terrain_generator.generate_chunk(coord)
-        self.loaded[coord] = chunk
-        return chunk
+        return saved if saved is not None else self.terrain_generator.generate_chunk(coord)
 
     def unload_chunk(self, coord: ChunkCoord) -> None:
         """Unload one chunk.
@@ -327,3 +417,8 @@ class ChunkManager:
         for chunk in self.loaded.values():
             if chunk.dirty_for_save:
                 self.save_manager.save_chunk(chunk)
+
+    def shutdown(self) -> None:
+        """Stop the background chunk worker pool."""
+
+        self.executor.shutdown(wait=True, cancel_futures=False)
