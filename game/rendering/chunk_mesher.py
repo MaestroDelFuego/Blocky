@@ -26,16 +26,10 @@ class ChunkMesher:
         self.blocks = block_registry
         self.world = world_manager
 
-    def build(self, chunk: Chunk) -> GeomNode:
-        fmt = GeomVertexFormat.getV3c4()
-        data = GeomVertexData(f"chunk-{chunk.coord.x}-{chunk.coord.z}", fmt, Geom.UHStatic)
-        vertex = GeomVertexWriter(data, "vertex")
-        color = GeomVertexWriter(data, "color")
-        triangles = GeomTriangles(Geom.UHStatic)
-        vertex_count = 0
+    def build(self, chunk: Chunk) -> dict[int, GeomNode]:
+        fmt = GeomVertexFormat.getV3c4t2()
         base_x = chunk.coord.x * CHUNK_SIZE
         base_z = chunk.coord.z * CHUNK_SIZE
-        node_name = f"chunk-{chunk.coord.x}-{chunk.coord.z}"
 
         blocks = self.blocks
         world_get_block = self.world.get_block
@@ -54,7 +48,24 @@ class ChunkMesher:
                 y_max = y
 
         if not local:
-            return GeomNode(node_name)
+            return {}
+
+        buckets: dict[int, dict[str, object]] = {}
+
+        def get_bucket(block_id: int) -> dict[str, object]:
+            bucket = buckets.get(block_id)
+            if bucket is None:
+                data = GeomVertexData(f"chunk-{chunk.coord.x}-{chunk.coord.z}-{block_id}", fmt, Geom.UHStatic)
+                bucket = {
+                    "data": data,
+                    "vertex": GeomVertexWriter(data, "vertex"),
+                    "color": GeomVertexWriter(data, "color"),
+                    "texcoord": GeomVertexWriter(data, "texcoord"),
+                    "triangles": GeomTriangles(Geom.UHStatic),
+                    "vertex_count": 0,
+                }
+                buckets[block_id] = bucket
+            return bucket
 
         def get_local(x, y, z):
             if 0 <= x < CHUNK_SIZE and 0 <= z < CHUNK_SIZE:
@@ -63,7 +74,7 @@ class ChunkMesher:
 
         def face_visible(x, y, z, block_id, transparent_block, normal):
             # WATER SPECIAL CASE: only render top surface
-            if block_id == 7:
+            if block_id == BlockRegistry.WATER:
                 return normal == (0, 1, 0)
 
             nx, ny, nz = x + normal[0], y + normal[1], z + normal[2]
@@ -135,7 +146,7 @@ class ChunkMesher:
                             continue
                         if not face_visible(x, y, z, block_id, block.transparent, normal):
                             continue
-                        mask[ui][vi] = block.color
+                        mask[ui][vi] = block_id
                         any_visible = True
 
                 if not any_visible:
@@ -169,26 +180,43 @@ class ChunkMesher:
                         u0, u1 = u_list[ui], u_list[ui + h - 1] + 1
                         v0, v1 = v_list[vi], v_list[vi + w - 1] + 1
                         depth_face = depth + 1 if positive else depth
+                        texcoords = ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0))
 
-                        r = key[0] * brightness
-                        g = key[1] * brightness
-                        b = key[2] * brightness
-                        a = key[3]
+                        block = blocks.get(key)
+                        r = block.color[0] * brightness
+                        g = block.color[1] * brightness
+                        b = block.color[2] * brightness
+                        a = block.color[3]
 
-                        for cx, cy, cz in corner_fn(depth_face, u0, u1, v0, v1, positive):
+                        bucket = get_bucket(key)
+                        vertex = bucket["vertex"]
+                        color = bucket["color"]
+                        texcoord = bucket["texcoord"]
+                        triangles = bucket["triangles"]
+                        vertex_count = int(bucket["vertex_count"])
+
+                        for (cx, cy, cz), (tu, tv) in zip(corner_fn(depth_face, u0, u1, v0, v1, positive), texcoords):
                             vertex.addData3(base_x + cx, base_z + cz, cy)
                             color.addData4(r, g, b, a)
+                            texcoord.addData2(tu, tv)
 
                         triangles.addVertices(vertex_count, vertex_count + 1, vertex_count + 2)
                         triangles.addVertices(vertex_count, vertex_count + 2, vertex_count + 3)
-                        vertex_count += 4
+                        bucket["vertex_count"] = vertex_count + 4
 
-        geom = Geom(data)
-        geom.addPrimitive(triangles)
-        node = GeomNode(node_name)
-        if vertex_count:
+        nodes: dict[int, GeomNode] = {}
+        for block_id, bucket in buckets.items():
+            vertex_count = int(bucket["vertex_count"])
+            if not vertex_count:
+                continue
+            data = bucket["data"]
+            triangles = bucket["triangles"]
+            geom = Geom(data)
+            geom.addPrimitive(triangles)
+            node = GeomNode(f"chunk-{chunk.coord.x}-{chunk.coord.z}-{block_id}")
             node.addGeom(geom)
-        return node
+            nodes[block_id] = node
+        return nodes
 
     def _face_brightness(self, normal: tuple[int, int, int]) -> float:
         if normal == (0, 1, 0):

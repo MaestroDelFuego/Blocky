@@ -26,7 +26,7 @@ class GameManager(ShowBase):
 
     TERRAIN_VERSION = 3
     MIN_RENDER_DISTANCE = 1
-    MAX_RENDER_DISTANCE = 5
+    MAX_RENDER_DISTANCE = 128
 
     def __init__(self, project_root: Path, app_config: Any) -> None:
         super().__init__()
@@ -38,8 +38,8 @@ class GameManager(ShowBase):
         self.autosave_timer = 0.0
         self.is_shutting_down = False
 
-        self.render_distance = 3
-        self.fov = 75.0
+        self.render_distance = 2
+        self.fov = 120.0
         self.camera_relative_movement = True
         self.settings_menu_open = False
 
@@ -122,7 +122,7 @@ class GameManager(ShowBase):
             int(settings.get("render_distance", self.render_distance))
         )
 
-        self.fov = max(45.0, min(110.0, float(settings.get("fov", self.fov))))
+        self.fov = max(45.0, min(120.0, float(settings.get("fov", self.fov))))
         self.camera_relative_movement = bool(
             settings.get("camera_relative_movement", self.camera_relative_movement)
         )

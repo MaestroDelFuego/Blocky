@@ -97,6 +97,6 @@ Client
 
 ## Known Limitations
 
-Chunk generation and meshing are synchronous. Blocks use vertex colors instead
-of texture assets. Face culling is implemented; full greedy meshing is a future
+Chunk generation and meshing are synchronous. Blocks use a PNG texture atlas
+instead of vertex colors. Face culling is implemented; full greedy meshing is a future
 optimization.

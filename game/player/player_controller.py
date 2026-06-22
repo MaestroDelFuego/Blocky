@@ -110,9 +110,9 @@ class PlayerController:
         self.jump_speed = 9
         self.gravity = 22.0
         self.camera_relative_movement = True
-        self.player_radius = 0.32
-        self.player_height = 2.0
-        self.eye_height = 1.82
+        self.player_radius = 0.1
+        self.player_height = 1.6
+        self.eye_height = 1.4
         self.health = 20
         self.hunger = 20
         self.hunger_timer = 0.0
@@ -502,6 +502,14 @@ class PlayerController:
             BlockRegistry.PLANKS: 1.05,
             BlockRegistry.DOOR_CLOSED: 1.0,
             BlockRegistry.DOOR_OPEN: 1.0,
+            BlockRegistry.TORCH: 0.12,
+            BlockRegistry.BED: 0.9,
+            BlockRegistry.FURNACE: 2.1,
+            BlockRegistry.LADDER: 0.35,
+            BlockRegistry.CHEST: 1.3,
+            BlockRegistry.BOOKSHELF: 1.1,
+            BlockRegistry.STONE_SLAB: 0.75,
+            BlockRegistry.WOOD_STAIRS: 0.9,
             BlockRegistry.CACTUS: 0.8,
             BlockRegistry.STONE: 1.8,
             BlockRegistry.COBBLESTONE: 1.9,

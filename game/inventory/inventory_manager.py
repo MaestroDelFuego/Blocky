@@ -48,6 +48,46 @@ ITEM_NAMES = {
     WOOD_SWORD: "Wood Sword",
 }
 
+CRAFTING_RECIPES: dict[str, tuple[tuple[tuple[int, int], ...], tuple[int, int]]] = {
+    "torch": (((COAL, 1), (BlockRegistry.WOOD, 1)), (BlockRegistry.TORCH, 4)),
+    "bed": (((BlockRegistry.PLANKS, 3), (BlockRegistry.LEAVES, 3)), (BlockRegistry.BED, 1)),
+    "furnace": (((BlockRegistry.STONE, 8),), (BlockRegistry.FURNACE, 1)),
+    "ladder": (((BlockRegistry.WOOD, 7),), (BlockRegistry.LADDER, 3)),
+    "chest": (((BlockRegistry.PLANKS, 8),), (BlockRegistry.CHEST, 1)),
+    "bookshelf": (((BlockRegistry.PLANKS, 6), (BlockRegistry.WOOD, 3)), (BlockRegistry.BOOKSHELF, 1)),
+    "stone_slab": (((BlockRegistry.STONE, 3),), (BlockRegistry.STONE_SLAB, 6)),
+    "wood_stairs": (((BlockRegistry.PLANKS, 6),), (BlockRegistry.WOOD_STAIRS, 4)),
+    "planks": (((BlockRegistry.WOOD, 1),), (BlockRegistry.PLANKS, 4)),
+    "bread": (((APPLE, 2),), (BREAD, 1)),
+    "glass": (((BlockRegistry.SAND, 2), (COAL, 1)), (BlockRegistry.GLASS, 2)),
+    "bricks": (((BlockRegistry.CLAY, 4),), (BlockRegistry.BRICKS, 2)),
+    "cobble": (((BlockRegistry.STONE, 1),), (BlockRegistry.COBBLESTONE, 1)),
+    "door": (((BlockRegistry.PLANKS, 3),), (BlockRegistry.DOOR_CLOSED, 1)),
+    "pickaxe": (((BlockRegistry.PLANKS, 3),), (WOOD_PICKAXE, 1)),
+    "axe": (((BlockRegistry.PLANKS, 3),), (WOOD_AXE, 1)),
+    "sword": (((BlockRegistry.PLANKS, 2),), (WOOD_SWORD, 1)),
+}
+
+CRAFTING_ORDER: tuple[str, ...] = (
+    "torch",
+    "bed",
+    "furnace",
+    "ladder",
+    "chest",
+    "bookshelf",
+    "stone_slab",
+    "wood_stairs",
+    "planks",
+    "bread",
+    "glass",
+    "bricks",
+    "cobble",
+    "door",
+    "pickaxe",
+    "axe",
+    "sword",
+)
+
 FOOD_VALUES = {
     APPLE: 4,
     BREAD: 6,
@@ -71,6 +111,14 @@ PLACEABLE_BLOCKS = {
         BlockRegistry.SNOW,
         BlockRegistry.CACTUS,
         BlockRegistry.DOOR_CLOSED,
+        BlockRegistry.TORCH,
+        BlockRegistry.BED,
+        BlockRegistry.FURNACE,
+        BlockRegistry.LADDER,
+        BlockRegistry.CHEST,
+        BlockRegistry.BOOKSHELF,
+        BlockRegistry.STONE_SLAB,
+        BlockRegistry.WOOD_STAIRS,
     )
 }
 
@@ -377,8 +425,12 @@ class InventoryManager:
             return 4.0
         if item_id == WOOD_AXE and block_id in {BlockRegistry.WOOD, BlockRegistry.PLANKS, BlockRegistry.DOOR_CLOSED, BlockRegistry.DOOR_OPEN}:
             return 4.0
+        if item_id == WOOD_AXE and block_id in {BlockRegistry.CHEST, BlockRegistry.BED, BlockRegistry.BOOKSHELF, BlockRegistry.WOOD_STAIRS}:
+            return 4.0
         if item_id == WOOD_SWORD and block_id in {BlockRegistry.LEAVES, BlockRegistry.CACTUS}:
             return 3.0
+        if item_id == WOOD_PICKAXE and block_id in {BlockRegistry.FURNACE, BlockRegistry.STONE_SLAB}:
+            return 4.0
         if item_id in TOOL_ITEMS:
             return 1.4
         return 1.0
@@ -386,18 +438,7 @@ class InventoryManager:
     def craft(self, recipe_id: str) -> bool:
         """Craft a small survival recipe."""
 
-        recipes = {
-            "planks": ([(BlockRegistry.WOOD, 1)], (BlockRegistry.PLANKS, 4)),
-            "bread": ([(APPLE, 2)], (BREAD, 1)),
-            "glass": ([(BlockRegistry.SAND, 2), (COAL, 1)], (BlockRegistry.GLASS, 2)),
-            "bricks": ([(BlockRegistry.CLAY, 4)], (BlockRegistry.BRICKS, 2)),
-            "cobble": ([(BlockRegistry.STONE, 1)], (BlockRegistry.COBBLESTONE, 1)),
-            "door": ([(BlockRegistry.PLANKS, 3)], (BlockRegistry.DOOR_CLOSED, 1)),
-            "pickaxe": ([(BlockRegistry.PLANKS, 3)], (WOOD_PICKAXE, 1)),
-            "axe": ([(BlockRegistry.PLANKS, 3)], (WOOD_AXE, 1)),
-            "sword": ([(BlockRegistry.PLANKS, 2)], (WOOD_SWORD, 1)),
-        }
-        recipe = recipes.get(recipe_id)
+        recipe = CRAFTING_RECIPES.get(recipe_id)
         if recipe is None:
             return False
         ingredients, result = recipe

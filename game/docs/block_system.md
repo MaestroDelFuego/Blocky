@@ -49,4 +49,4 @@ emission, fluid behavior, and mod-loaded block definitions.
 
 ## Known Limitations
 
-Current rendering uses vertex colors instead of texture assets.
+Current rendering uses a PNG texture atlas instead of vertex colors.

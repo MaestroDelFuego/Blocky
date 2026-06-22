@@ -114,6 +114,14 @@ class BlockRegistry:
     CACTUS = 16
     DOOR_CLOSED = 17
     DOOR_OPEN = 18
+    TORCH = 19
+    BED = 20
+    FURNACE = 21
+    LADDER = 22
+    CHEST = 23
+    BOOKSHELF = 24
+    STONE_SLAB = 25
+    WOOD_STAIRS = 26
 
     def __init__(self) -> None:
         """Create the built-in block catalog.
@@ -183,6 +191,14 @@ class BlockRegistry:
         self.register(BlockDefinition(16, "cactus", "Cactus", True, False, False, (0.12, 0.42, 0.16, 1)))
         self.register(BlockDefinition(17, "door_closed", "Door", True, False, False, (0.50, 0.29, 0.12, 1)))
         self.register(BlockDefinition(18, "door_open", "Open Door", False, True, False, (0.50, 0.29, 0.12, 0.50)))
+        self.register(BlockDefinition(19, "torch", "Torch", False, True, False, (0.96, 0.80, 0.28, 1.0)))
+        self.register(BlockDefinition(20, "bed", "Bed", True, False, False, (0.77, 0.24, 0.26, 1.0)))
+        self.register(BlockDefinition(21, "furnace", "Furnace", True, False, False, (0.33, 0.34, 0.36, 1.0)))
+        self.register(BlockDefinition(22, "ladder", "Ladder", False, True, False, (0.61, 0.44, 0.21, 1.0)))
+        self.register(BlockDefinition(23, "chest", "Chest", True, False, False, (0.58, 0.34, 0.11, 1.0)))
+        self.register(BlockDefinition(24, "bookshelf", "Bookshelf", True, False, False, (0.63, 0.48, 0.25, 1.0)))
+        self.register(BlockDefinition(25, "stone_slab", "Stone Slab", True, False, False, (0.49, 0.50, 0.52, 1.0)))
+        self.register(BlockDefinition(26, "wood_stairs", "Wood Stairs", True, False, False, (0.46, 0.26, 0.12, 1.0)))
 
     def register(self, definition: BlockDefinition) -> None:
         """Add one block definition to the registry.
