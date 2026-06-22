@@ -25,11 +25,11 @@ game/
 |-- inventory/    inventory slots and hotbar selection
 |-- rendering/    chunk meshing, scene graph, lighting, UI
 |-- saving/       JSON world/chunk/player persistence
-`-- assets/       future textures, sounds, fonts, and models
+`-- assets/       block PNGs, texture atlas, sounds, fonts, and models
 ```
 
-The current renderer uses vertex colors, so the game runs without texture
-assets.
+The current renderer uses a PNG texture atlas from game/assets, so block
+faces now render from image assets instead of vertex colors.
 
 ## Installing Dependencies
 
